@@ -1,0 +1,15 @@
+# Spyder
+.spyproject/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Logs
+logs/
+*.log
+
+# Virtual env
+venv/
+.env/

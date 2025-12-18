@@ -1,0 +1,9 @@
+# -*- coding: utf-8 -*-
+env: dev
+
+strategy:
+  sharpe_min: 1.0
+  mdd_max: 0.3
+
+
+

@@ -1,0 +1,345 @@
+# -*- coding: utf-8 -*-
+分治算法
+分治算法是一种将问题分解为更小的子问题，递归解决子问题，然后合并结果的算法设计范式。
+
+核心思想
+"分而治之" - Divide and Conquer：
+
+分解：将原问题分解为若干个规模较小的相同子问题
+
+解决：递归地解决各个子问题
+
+合并：将子问题的解合并为原问题的解
+
+算法框架
+python
+def divide_conquer(problem):
+    # 1. 基本情况：问题足够小，直接求解
+    if problem is small enough:
+        return base_case_solution(problem)
+    
+    # 2. 分解：将问题分解为子问题
+    subproblems = divide(problem)
+    
+    # 3. 递归：解决子问题
+    solutions = []
+    for sub in subproblems:
+        solutions.append(divide_conquer(sub))
+    
+    # 4. 合并：合并子问题的解
+    return combine(solutions)
+经典应用示例
+1. 归并排序
+python
+def merge_sort(arr):
+    if len(arr) <= 1:
+        return arr
+    
+    # 分解：将数组分成两半
+    mid = len(arr) // 2
+    left = arr[:mid]
+    right = arr[mid:]
+    
+    # 递归：分别排序
+    left = merge_sort(left)
+    right = merge_sort(right)
+    
+    # 合并：合并两个有序数组
+    return merge(left, right)
+
+def merge(left, right):
+    result = []
+    i = j = 0
+    
+    while i < len(left) and j < len(right):
+        if left[i] <= right[j]:
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            j += 1
+    
+    result.extend(left[i:])
+    result.extend(right[j:])
+    return result
+2. 快速排序
+python
+def quick_sort(arr, low, high):
+    if low < high:
+        # 分解：划分数组，返回基准位置
+        pi = partition(arr, low, high)
+        
+        # 递归：排序左右两部分
+        quick_sort(arr, low, pi - 1)  # 左半部分
+        quick_sort(arr, pi + 1, high)  # 右半部分
+
+def partition(arr, low, high):
+    pivot = arr[high]  # 选择最后一个元素作为基准
+    i = low - 1  # 较小元素的索引
+    
+    for j in range(low, high):
+        if arr[j] <= pivot:
+            i += 1
+            arr[i], arr[j] = arr[j], arr[i]
+    
+    arr[i + 1], arr[high] = arr[high], arr[i + 1]
+    return i + 1
+3. 二分查找
+python
+def binary_search(arr, target, left, right):
+    if left > right:
+        return -1  # 未找到
+    
+    mid = left + (right - left) // 2
+    
+    if arr[mid] == target:
+        return mid
+    elif arr[mid] > target:
+        # 在左半部分继续查找
+        return binary_search(arr, target, left, mid - 1)
+    else:
+        # 在右半部分继续查找
+        return binary_search(arr, target, mid + 1, right)
+4. 最大子数组问题
+python
+def max_crossing_subarray(arr, low, mid, high):
+    """跨越中点的最大子数组"""
+    left_sum = float('-inf')
+    total = 0
+    max_left = mid
+    
+    for i in range(mid, low - 1, -1):
+        total += arr[i]
+        if total > left_sum:
+            left_sum = total
+            max_left = i
+    
+    right_sum = float('-inf')
+    total = 0
+    max_right = mid + 1
+    
+    for j in range(mid + 1, high + 1):
+        total += arr[j]
+        if total > right_sum:
+            right_sum = total
+            max_right = j
+    
+    return (max_left, max_right, left_sum + right_sum)
+
+def max_subarray(arr, low, high):
+    if low == high:
+        return (low, high, arr[low])  # 基本情况
+    
+    mid = (low + high) // 2
+    
+    # 递归求解三种情况
+    left_low, left_high, left_sum = max_subarray(arr, low, mid)
+    right_low, right_high, right_sum = max_subarray(arr, mid + 1, high)
+    cross_low, cross_high, cross_sum = max_crossing_subarray(arr, low, mid, high)
+    
+    # 返回和最大的子数组
+    if left_sum >= right_sum and left_sum >= cross_sum:
+        return (left_low, left_high, left_sum)
+    elif right_sum >= left_sum and right_sum >= cross_sum:
+        return (right_low, right_high, right_sum)
+    else:
+        return (cross_low, cross_high, cross_sum)
+5. 矩阵乘法（Strassen算法）
+python
+def strassen_multiply(A, B):
+    """Strassen矩阵乘法，时间复杂度 O(n^log2(7)) ≈ O(n^2.81)"""
+    n = len(A)
+    
+    # 基本情况：1x1矩阵
+    if n == 1:
+        return [[A[0][0] * B[0][0]]]
+    
+    # 分解：将矩阵分成4个子矩阵
+    mid = n // 2
+    
+    # 创建子矩阵
+    A11 = [[A[i][j] for j in range(mid)] for i in range(mid)]
+    A12 = [[A[i][j] for j in range(mid, n)] for i in range(mid)]
+    A21 = [[A[i][j] for j in range(mid)] for i in range(mid, n)]
+    A22 = [[A[i][j] for j in range(mid, n)] for i in range(mid, n)]
+    
+    B11 = [[B[i][j] for j in range(mid)] for i in range(mid)]
+    B12 = [[B[i][j] for j in range(mid, n)] for i in range(mid)]
+    B21 = [[B[i][j] for j in range(mid)] for i in range(mid, n)]
+    B22 = [[B[i][j] for j in range(mid, n)] for i in range(mid, n)]
+    
+    # 计算7个中间矩阵
+    M1 = strassen_multiply(matrix_add(A11, A22), matrix_add(B11, B22))
+    M2 = strassen_multiply(matrix_add(A21, A22), B11)
+    M3 = strassen_multiply(A11, matrix_sub(B12, B22))
+    M4 = strassen_multiply(A22, matrix_sub(B21, B11))
+    M5 = strassen_multiply(matrix_add(A11, A12), B22)
+    M6 = strassen_multiply(matrix_sub(A21, A11), matrix_add(B11, B12))
+    M7 = strassen_multiply(matrix_sub(A12, A22), matrix_add(B21, B22))
+    
+    # 计算结果矩阵的4个子矩阵
+    C11 = matrix_add(matrix_sub(matrix_add(M1, M4), M5), M7)
+    C12 = matrix_add(M3, M5)
+    C21 = matrix_add(M2, M4)
+    C22 = matrix_add(matrix_sub(matrix_add(M1, M3), M2), M6)
+    
+    # 合并结果
+    C = [[0 for _ in range(n)] for _ in range(n)]
+    for i in range(mid):
+        for j in range(mid):
+            C[i][j] = C11[i][j]
+            C[i][j + mid] = C12[i][j]
+            C[i + mid][j] = C21[i][j]
+            C[i + mid][j + mid] = C22[i][j]
+    
+    return C
+分治算法的特征
+适用条件
+问题可分解：问题可以分解为相同类型的子问题
+
+子问题独立：子问题之间相互独立，没有重叠
+
+合并可行：子问题的解可以合并为原问题的解
+
+停止条件：存在简单直接的停止递归条件
+
+复杂度分析
+通常使用主定理来分析分治算法的时间复杂度：
+
+对于递归式：T(n) = aT(n/b) + f(n)
+
+a：子问题数量
+
+b：子问题规模缩小的比例
+
+f(n)：分解和合并的代价
+
+常见情况：
+
+归并排序：T(n) = 2T(n/2) + O(n) → O(n log n)
+
+二分查找：T(n) = T(n/2) + O(1) → O(log n)
+
+Strassen算法：T(n) = 7T(n/2) + O(n²) → O(n^log₂7) ≈ O(n²·⁸¹)
+
+分治 vs 动态规划 vs 贪心
+特征	分治算法	动态规划	贪心算法
+子问题关系	相互独立	重叠子问题	相互独立
+求解方式	递归求解	记忆化/递推	局部最优
+最优性	不一定求最优解	求最优解	求近似最优解
+典型应用	排序、查找	背包、最短路径	最小生成树、霍夫曼编码
+实现技巧与优化
+1. 递归深度控制
+python
+# 尾递归优化（Python不支持自动优化，但可以手动转换）
+def factorial(n, acc=1):
+    if n == 0:
+        return acc
+    return factorial(n - 1, n * acc)
+
+# 迭代替代递归（防止栈溢出）
+def factorial_iterative(n):
+    result = 1
+    for i in range(1, n + 1):
+        result *= i
+    return result
+2. 记忆化优化
+虽然分治通常子问题独立，但有时可以加入记忆化：
+
+python
+def fibonacci(n, memo={}):
+    if n in memo:
+        return memo[n]
+    if n <= 1:
+        return n
+    memo[n] = fibonacci(n - 1, memo) + fibonacci(n - 2, memo)
+    return memo[n]
+3. 并行化处理
+分治算法天然适合并行计算：
+
+python
+import concurrent.futures
+
+def parallel_divide_conquer(problem):
+    if is_small(problem):
+        return solve_directly(problem)
+    
+    subproblems = divide(problem)
+    
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = list(executor.map(parallel_divide_conquer, subproblems))
+    
+    return combine(results)
+常见问题模式
+1. 最近点对问题
+python
+def closest_pair(points):
+    """找到平面上最近的点对"""
+    # 按x坐标排序
+    points_sorted_x = sorted(points, key=lambda p: p[0])
+    points_sorted_y = sorted(points, key=lambda p: p[1])
+    
+    return closest_pair_recursive(points_sorted_x, points_sorted_y)
+
+def closest_pair_recursive(points_x, points_y):
+    n = len(points_x)
+    
+    # 基本情况
+    if n <= 3:
+        return brute_force_closest(points_x)
+    
+    # 分解：按x坐标中位数分割
+    mid = n // 2
+    left_x = points_x[:mid]
+    right_x = points_x[mid:]
+    
+    # 递归求解
+    left_y = [p for p in points_y if p[0] <= points_x[mid][0]]
+    right_y = [p for p in points_y if p[0] > points_x[mid][0]]
+    
+    d_left = closest_pair_recursive(left_x, left_y)
+    d_right = closest_pair_recursive(right_x, right_y)
+    
+    d = min(d_left, d_right)
+    
+    # 检查跨越分割线的点对
+    strip = [p for p in points_y if abs(p[0] - points_x[mid][0]) < d]
+    
+    # 检查strip中的点
+    for i in range(len(strip)):
+        j = i + 1
+        while j < len(strip) and (strip[j][1] - strip[i][1]) < d:
+            dist = distance(strip[i], strip[j])
+            if dist < d:
+                d = dist
+            j += 1
+    
+    return d
+总结
+分治算法的优势
+简化问题：将复杂问题分解为可管理的子问题
+
+并行性：子问题独立，适合并行计算
+
+算法效率：通常能得到较好的时间复杂度
+
+代码清晰：递归实现通常更简洁易懂
+
+注意事项
+递归开销：递归调用可能导致栈溢出
+
+子问题划分：划分不均匀可能影响效率
+
+合并复杂度：合并步骤可能成为性能瓶颈
+
+适用性：不是所有问题都适合分治策略
+
+选择指南
+当问题可以自然分解为独立子问题时，考虑分治
+
+当子问题有重叠时，考虑动态规划
+
+当问题具有贪心选择性质时，考虑贪心算法
+
+分治算法是算法设计中的核心范式之一，理解并掌握它对于解决复杂计算问题至关重要。
+
